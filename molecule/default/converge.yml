@@ -1,0 +1,21 @@
+---
+# If you tag include_role tasks in here, you can selectively apply roles by setting the ANSIBLE_SKIP_TAGS environment variable:
+# $ ANSIBLE_SKIP_TAGS="geerlingguy.nginx,geerlingguy.php" molecule converge
+# Note multiple tags are seperated by a comma
+#
+- name: Converge
+  hosts: all
+  tasks:
+    - name: "Include the role we're developing"
+      include_role:
+        apply:
+          become: true
+        name: "ansible.cloudwatch-agent"
+      vars:
+        aws_cw_region: 'us-east-1'
+        aws_cw_logfiles:
+          - path: "/var/log/nginx/whmcs-staging.sectigodev.com-access.log"
+            timestamp_format: "[%d/%b/%Y:%H:%M:%S %z]"
+            log_group: "nginxlogs"
+      tags:
+        - ansible.cloudwatch-agent

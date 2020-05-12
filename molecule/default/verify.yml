@@ -1,0 +1,20 @@
+---
+- name: Verify
+  hosts: all
+  tasks:
+
+# NOTE that verify.yml does not inherit values from your playbook in anyway, they are seperate playbooks and run seperately.
+
+# TODO get the value of MOL_NETWORKMODE, if its not set or "default" then we need to look for ports listened to by docker-prox,
+# if MOL_NETWORKMODE==host, then we need the listening program to be nginx
+#
+  - name: include the variables which define what will be checked
+    include_vars:
+      file: ../default/verify_vars.yml
+
+  - name: include the standard verifier
+    include_tasks: ../default/tasks/verify_root.yml
+    tags:
+      - standardtests
+
+# Add role specific tests here

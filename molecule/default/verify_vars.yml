@@ -1,0 +1,18 @@
+---
+required_files:
+  - path: /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent
+    isdir: false
+    owner: 'root'
+    mode: '0755'
+  - path: /etc/amazon/amazon-cloudwatch-agent/amazon-cloudwatch-agent.d/file_amazon-cloudwatch-agent.json
+    isdir: false
+    owner: 'root'
+    mode: '0755'
+    requiredstr: 'whmcs-staging.sectigodev.com-access'
+required_packages:
+  - "amazon-cloudwatch-agent"
+#required_ports:
+required_services:
+  amazon-cloudwatch-agent.service:
+    state: running
+    status: enabled

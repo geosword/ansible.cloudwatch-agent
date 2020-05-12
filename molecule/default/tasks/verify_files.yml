@@ -1,0 +1,87 @@
+# EXAMPLE
+#  - name: define packages, files, directories and other stuff you want to check lots of
+#    set_fact:
+#      required_files:
+#        - path: "/etc/nginx/dhparams.pem"
+#          isdir: false
+#          islink: false
+#          mode: '0755'
+#          owner: 'www-data'
+# NOTE requiredstr is pretty dumb, its a very simple (not even regex) string search
+#          requiredstr: 'this must appear in the file'
+---
+- name: file_index
+  set_fact:
+    file_index: "{{ file_index| default({}) | combine( {item.path: item} ) }}"
+  loop: "{{ required_files|flatten(levels=1) }}"
+
+- name: stat required_files
+  stat:
+    path: "{{ item.path }}"
+  register: required_files_stat
+  become: true
+  loop: "{{ required_files|flatten(levels=1) }}"
+
+- name: check required files actually exist
+  assert:
+    that: "{{ item.stat.exists }}"
+    msg: "{{ item.invocation.module_args.path }} does not exist, and it should according to the unit tests"
+  loop: "{{ required_files_stat.results|flatten(levels=1) }}"
+
+- name: check file modes are correct
+  assert:
+    that: "'{{ file_index[item.stat.path].mode }}' == '{{ item.stat.mode }}'"
+    msg: >
+      {{ item.invocation.module_args.path }} mode is not correct. Its currently {{ item.stat.mode }}
+      and it should be {{ file_index[item.stat.path].mode }}
+  loop: "{{ required_files_stat.results|flatten(levels=1) }}"
+  when:
+    - file_index[item.stat.path].mode is defined
+
+- name: check file is a symlink
+  assert:
+    that: "'{{ file_index[item.stat.path].islink }}' == '{{ item.stat.islnk }}'"
+    msg: >
+      {{ item.invocation.module_args.path }} type is not correct. Its currently NOT a link {{ item.stat.islnk }}
+      and it should be according to required_files {{ file_index[item.stat.path].islink }}
+  loop: "{{ required_files_stat.results|flatten(levels=1) }}"
+  when:
+    - file_index[item.stat.path].islink is defined
+
+- name: check symlink points to the correct place
+  assert:
+    that: "'{{ file_index[item.stat.path].linktarget }}' == '{{ item.stat.lnk_target }}'"
+    msg: >
+      {{ item.invocation.module_args.path }} target is not correct. Its currently {{ item.stat.lnk_target }}
+      and should be {{ file_index[item.stat.path].linktarget }}
+  loop: "{{ required_files_stat.results|flatten(levels=1) }}"
+  when:
+    - file_index[item.stat.path].linktarget is defined
+
+- name: check files are files and directories are directories
+  assert:
+    that: "'{{ file_index[item.stat.path].isdir }}' == '{{ item.stat.isdir }}'"
+    msg: >
+      {{ item.invocation.module_args.path }} isdir is not correct. Its currently {{ item.stat.isdir }}
+      and it should be {{ file_index[item.stat.path].isdir }}
+  loop: "{{ required_files_stat.results|flatten(levels=1) }}"
+  when:
+    - file_index[item.stat.path].isdir is defined
+
+- name: slurp files so we can check for requiredstr's
+  slurp:
+    src: "{{ item.path }}"
+  register: slurpedfiles
+  loop: "{{ required_files|flatten(levels=1) }}"
+  become: true
+  when:
+    - item.requiredstr is defined
+
+# TODO: might be able to use regex_search here, with the multi line option to add some flexibility this test
+- name: check file contents
+  assert:
+    that: "{{ file_index[item.source].requiredstr in item.content | b64decode }}"
+    msg: "{{ file_index[item.source].requiredstr }} is not in file {{ item.source }} and should be according to the unit tests"
+  loop: "{{ slurpedfiles.results|flatten(levels=1) }}"
+  when:
+    - item.skipped is not defined

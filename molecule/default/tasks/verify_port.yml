@@ -1,0 +1,28 @@
+# EXAMPLE
+#  - name: define packages, files, directories and other stuff you want to check lots of
+#    set_fact:
+#     required_ports:
+#       - port: 80
+#         name: "nginx:"
+#       - port: 443
+#         name: "nginx:"
+---
+- name: port_index
+  set_fact:
+    # The item.port|int there is important, without that, we need to type cast all other item.port instances
+    # to string, otherwise ansible does not see the element as existing, and therefore in accordance with the "when"
+    # on the assert instance to check the port is listening, is skipped. This (to the passing eye) could be seen as
+    # "test success" whether the port was showing as listening or not
+    port_index: "{{ port_index| default({}) | combine( {item.port|int: item} ) }}"
+  loop: "{{ required_ports|flatten(levels=1) }}"
+
+- name: populate listening port facts
+  listen_ports_facts:
+  become: true
+
+- name: check programs a listening on the right ports
+  assert:
+    that: "{{ item.name == port_index[item.port].name }}"
+    msg: "port {{ item.port }} is not being listened on by {{ port_index[item.port].name }} as defined in required_ports"
+  loop: "{{ ansible_facts.tcp_listen|flatten(levels=1) }}"
+  when: "port_index[item.port] is defined"
