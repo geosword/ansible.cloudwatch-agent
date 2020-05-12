@@ -1,5 +1,5 @@
 ---
-# Default  
+# Default
 aws_cw_region: ap-southeast-2
 aws_cw_agent_type: 'ec2'
 aws_cw_agent_conf: amazon-cloudwatch-agent.json
@@ -33,6 +33,38 @@ aws_profile: 'AmazonCloudWatchAgent'
 aws_profile_path: '/tmp/credentials'
 
 # Proxy
-proxy_url: 
+proxy_url:
 no_proxy:
 
+# log file to scrape:
+#aws_cw_logfiles:
+#  - path: "/var/log/daemon.log"
+#    timestamp_format: "%b %d %H:%M:%S"
+#    log_group: "somegroup"
+
+# timestamp_format reference:
+# %y: Year without century as a zero-padded decimal number. 00, 01, ..., 99
+#
+# %Y: Year with century as a decimal number.1970, 1988, 2001, 2013
+#
+# %b: Month as locale's abbreviated name. Jan, Feb, ..., Dec (en_US);
+#
+# %B: Month as locale's full name. January, February, ..., December (en_US);
+#
+# %m: Month as a zero-padded decimal number. 01, 02, ..., 12
+#
+# %d: Day of the month as a zero-padded decimal number. 01, 02, ..., 31
+#
+# %H: Hour (24-hour clock) as a zero-padded decimal number. 00, 01, ..., 23
+#
+# %I: Hour (12-hour clock) as a zero-padded decimal number. 01, 02, ..., 12
+#
+# %p: Locale's equivalent of either AM or PM.
+#
+# %M: Minute as a zero-padded decimal number. 00, 01, ..., 59
+#
+# %S: Second as a zero-padded decimal number. 00, 01, ..., 59
+#
+# %f: Microsecond as a decimal number, zero-padded on the left. 000000, ..., 999999
+#
+# %z: UTC offset in the form +HHMM or -HHMM. +0000, -0400, +1030

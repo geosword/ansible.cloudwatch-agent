@@ -88,7 +88,7 @@
         name: "{{ keypair_name }}"
       register: keypair
 
-    - name: Persist the keypair
+    - name: Persist the keypair # noqa 503
       copy:
         dest: "{{ keypair_path }}"
         content: "{{ keypair.key.private_key }}"
@@ -111,6 +111,7 @@
           if item.image is defined
           else (ami_facts.results[index].images | sort(attribute='creation_date', reverse=True))[0].image_id }}"
         instance_type: "{{ item.instance_type }}"
+        instance_profile_name: "{{ item.IAMrole }}"
         vpc_subnet_id: "{{ item.vpc_subnet_id }}"
         group: "{{ security_group_name }}"
         instance_tags: "{{ item.instance_tags | combine({'instance': item.name})
@@ -138,7 +139,7 @@
 
     # Mandatory configuration for Molecule to function.
 
-    - name: Populate instance config dict
+    - name: Populate instance config dict  # noqa 503
       set_fact:
         instance_conf_dict: {
           'instance': "{{ item.instances[0].tags.instance }}",
@@ -152,12 +153,12 @@
       register: instance_config_dict
       when: server.changed | bool
 
-    - name: Convert instance config dict to a list
+    - name: Convert instance config dict to a list  # noqa 503
       set_fact:
         instance_conf: "{{ instance_config_dict.results | map(attribute='ansible_facts.instance_conf_dict') | list }}"
       when: server.changed | bool
 
-    - name: Dump instance config
+    - name: Dump instance config  # noqa 503
       copy:
         content: "{{ instance_conf | to_json | from_json | molecule_to_yaml | molecule_header }}"
         dest: "{{ molecule_instance_config }}"

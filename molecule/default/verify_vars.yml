@@ -8,7 +8,7 @@ required_files:
     isdir: false
     owner: 'root'
     mode: '0755'
-    requiredstr: 'whmcs-staging.sectigodev.com-access'
+    requiredstr: 'molecule-test-logs'
 required_packages:
   - "amazon-cloudwatch-agent"
 #required_ports:

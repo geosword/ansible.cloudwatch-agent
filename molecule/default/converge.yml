@@ -6,6 +6,14 @@
 - name: Converge
   hosts: all
   tasks:
+    - name: create the molecule-test-logs log group
+      cloudwatchlogs_log_group:
+        state: present
+        log_group_name: molecule-test-logs
+        tags: {"Name": "molecule-test-logs", "Env": "infraqa"}
+        retention: 3
+      delegate_to: localhost
+
     - name: "Include the role we're developing"
       include_role:
         apply:
@@ -14,8 +22,8 @@
       vars:
         aws_cw_region: 'us-east-1'
         aws_cw_logfiles:
-          - path: "/var/log/nginx/whmcs-staging.sectigodev.com-access.log"
-            timestamp_format: "[%d/%b/%Y:%H:%M:%S %z]"
-            log_group: "nginxlogs"
+          - path: "/var/log/daemon.log"
+            timestamp_format: "%b %d %H:%M:%S"
+            log_group: "molecule-test-logs"
       tags:
         - ansible.cloudwatch-agent

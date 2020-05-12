@@ -41,7 +41,7 @@
       set_fact:
         instance_conf: {}
 
-    - name: Dump instance config
+    - name: Dump instance config  # noqa 503
       copy:
         content: "{{ instance_conf | to_json | from_json | molecule_to_yaml | molecule_header }}"
         dest: "{{ molecule_instance_config }}"
